@@ -11,7 +11,13 @@
         <li class="navbar__item">
           <router-link to="/register">Register</router-link>
         </li>
+        <li class="navbar__item">
+          <router-link to="logout">Logout</router-link>
+        </li>
+
       </ul>
     </div>
+
+    <router-view></router-view>
   </div>
 </template>
