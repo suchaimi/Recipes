@@ -1,13 +1,8 @@
 <template>
-  <form class="form" @submit.prevent="register">
+  <form class="form" @submit.prevent="login">
     <h1 class="form__title">
-      Create an account
+      Login
     </h1>
-    <div class="form__group">
-      <label>Name</label>
-      <input type="text" class="form__control" v-model="form.name">
-      <small class="error__control" v-if="error.errors">{{error.errors.name[0]}}</small>
-    </div>
     <div class="form__group">
       <label>Email</label>
       <input type="text" class="form__control" v-model="form.email">
@@ -18,13 +13,9 @@
       <input type="password" class="form__control" v-model="form.password">
       <small class="error__control" v-if="error.errors">{{error.errors.password[0]}}</small>
     </div>
+   
     <div class="form__group">
-      <label>Confirm Password</label>
-      <input type="password" class="form__control" v-model="form.password_confirmation">
-      <!-- <small class="error__control" v-if="error.password_confirmation">{{error.password_confirmation}}</small> -->
-    </div>
-    <div class="form__group">
-      <button :disabled="isProcessing" class="btn btn__primary">Register</button>
+      <button :disabled="isProcessing" class="btn btn__primary">Login</button>
     </div>
   </form>
 </template>
@@ -36,24 +27,22 @@ export default {
   data() {
     return {
       form: {
-        name: '',
         email: '',
-        password: '',
-        password_confirmation: ''
+        password: ''
       },
       error: {},
       isProcessing: false
     }
   },
   methods: {
-    register() {
+    login() {
       this.isProcessing = true
       this.error = {}
-      post(`/api/register`, this.form)
+      post(`/api/login`, this.form)
         .then((res) => {
-          if(res.data.registered) {
-            Flash.setSuccess('Register success')
-            this.$router.push('/login')
+          if(res.data.authenticated) {
+            Flash.setSuccess('Login success')
+            this.$router.push('/')
           }
           this.isProcessing = false
         })
