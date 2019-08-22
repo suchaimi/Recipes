@@ -22,7 +22,9 @@
 
 <script>
 import Flash from '../../helpers/flash'
+import Auth from '../../store/auth'
 import { post } from '../../helpers/api'
+
 export default {
   data() {
     return {
@@ -41,6 +43,7 @@ export default {
       post(`/api/login`, this.form)
         .then((res) => {
           if(res.data.authenticated) {
+            Auth.set(res.data.api_token, res.data.user_id)
             Flash.setSuccess('Login success')
             this.$router.push('/')
           }

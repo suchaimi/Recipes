@@ -60,4 +60,16 @@ class AuthController extends Controller
                 'email' => ['Provided email and password does not match !']
             ], 422);
     }
+
+    public function logout(Request $request)
+    {
+        $user = $request->user();
+        $user->api_token = null;
+        $user->save();
+
+        return response()
+            ->json([
+                'logged_out' => true
+            ]);
+    }
 }

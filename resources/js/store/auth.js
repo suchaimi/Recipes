@@ -10,6 +10,7 @@ export default {
   set(api_token, user_id) {
     localStorage.setItem('api_token', api_token)
     localStorage.setItem('user_id', user_id)
+    this.initialize();
   },
   remove() {
     localStorage.removeItem('api_token')

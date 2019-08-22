@@ -1862,6 +1862,7 @@ module.exports = function isBuffer (obj) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _helpers_flash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./helpers/flash */ "./resources/js/helpers/flash.js");
 /* harmony import */ var _store_auth__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./store/auth */ "./resources/js/store/auth.js");
+/* harmony import */ var _helpers_api__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./helpers/api */ "./resources/js/helpers/api.js");
 //
 //
 //
@@ -1891,6 +1892,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+
+
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -1902,6 +1905,29 @@ __webpack_require__.r(__webpack_exports__);
       flash: _helpers_flash__WEBPACK_IMPORTED_MODULE_0__["default"].state,
       auth: _store_auth__WEBPACK_IMPORTED_MODULE_1__["default"].state
     };
+  },
+  computed: {
+    check: function check() {
+      if (this.auth.api_token && this.auth.user_id) {
+        return true;
+      }
+
+      return false;
+    }
+  },
+  methods: {
+    logout: function logout() {
+      var _this = this;
+
+      Object(_helpers_api__WEBPACK_IMPORTED_MODULE_2__["post"])("/api/logout").then(function (res) {
+        if (res.data.logged_out) {
+          _store_auth__WEBPACK_IMPORTED_MODULE_1__["default"].remove();
+          _helpers_flash__WEBPACK_IMPORTED_MODULE_0__["default"].setSuccess('Logout success !');
+
+          _this.$router.push('/login');
+        }
+      });
+    }
   }
 });
 
@@ -1917,7 +1943,8 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _helpers_flash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../helpers/flash */ "./resources/js/helpers/flash.js");
-/* harmony import */ var _helpers_api__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../helpers/api */ "./resources/js/helpers/api.js");
+/* harmony import */ var _store_auth__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../store/auth */ "./resources/js/store/auth.js");
+/* harmony import */ var _helpers_api__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../helpers/api */ "./resources/js/helpers/api.js");
 //
 //
 //
@@ -1940,6 +1967,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -1959,8 +1987,9 @@ __webpack_require__.r(__webpack_exports__);
 
       this.isProcessing = true;
       this.error = {};
-      Object(_helpers_api__WEBPACK_IMPORTED_MODULE_1__["post"])("/api/login", this.form).then(function (res) {
+      Object(_helpers_api__WEBPACK_IMPORTED_MODULE_2__["post"])("/api/login", this.form).then(function (res) {
         if (res.data.authenticated) {
+          _store_auth__WEBPACK_IMPORTED_MODULE_1__["default"].set(res.data.api_token, res.data.user_id);
           _helpers_flash__WEBPACK_IMPORTED_MODULE_0__["default"].setSuccess('Login success');
 
           _this.$router.push('/');
@@ -2564,7 +2593,7 @@ var render = function() {
         ),
         _vm._v(" "),
         _c("ul", { staticClass: "navbar__list" }, [
-          !_vm.auth.api_token
+          !_vm.check
             ? _c(
                 "li",
                 { staticClass: "navbar__item" },
@@ -2577,7 +2606,7 @@ var render = function() {
               )
             : _vm._e(),
           _vm._v(" "),
-          !_vm.auth.api_token
+          !_vm.check
             ? _c(
                 "li",
                 { staticClass: "navbar__item" },
@@ -2590,17 +2619,21 @@ var render = function() {
               )
             : _vm._e(),
           _vm._v(" "),
-          _vm.auth.api_token
-            ? _c(
-                "li",
-                { staticClass: "navbar__item" },
-                [
-                  _c("router-link", { attrs: { to: "logout" } }, [
-                    _vm._v("Logout")
-                  ])
-                ],
-                1
-              )
+          _vm.check
+            ? _c("li", { staticClass: "navbar__item" }, [
+                _c(
+                  "a",
+                  {
+                    on: {
+                      click: function($event) {
+                        $event.stopPropagation()
+                        return _vm.logout($event)
+                      }
+                    }
+                  },
+                  [_vm._v("Logout")]
+                )
+              ])
             : _vm._e()
         ])
       ]),
@@ -17977,12 +18010,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "post", function() { return post; });
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _store_auth__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../store/auth */ "./resources/js/store/auth.js");
+
 
 function post(url, data) {
   return axios__WEBPACK_IMPORTED_MODULE_0___default()({
     method: 'POST',
     url: url,
-    data: data
+    data: data,
+    headers: {
+      'Authorization': "Bearer ".concat(_store_auth__WEBPACK_IMPORTED_MODULE_1__["default"].state.api_token)
+    }
   });
 }
 
@@ -18081,6 +18119,7 @@ __webpack_require__.r(__webpack_exports__);
   set: function set(api_token, user_id) {
     localStorage.setItem('api_token', api_token);
     localStorage.setItem('user_id', user_id);
+    this.initialize();
   },
   remove: function remove() {
     localStorage.removeItem('api_token');

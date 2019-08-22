@@ -5,14 +5,14 @@
         <router-link to="/">Recipe Box</router-link>
       </div>
       <ul class="navbar__list">
-        <li class="navbar__item" v-if="!auth.api_token">
+        <li class="navbar__item" v-if="!check">
           <router-link to="/login">Login</router-link>
         </li>
-        <li class="navbar__item" v-if="!auth.api_token">
+        <li class="navbar__item" v-if="!check">
           <router-link to="/register">Register</router-link>
         </li>
-        <li class="navbar__item" v-if="auth.api_token">
-          <router-link to="logout">Logout</router-link>
+        <li class="navbar__item" v-if="check">
+          <a @click.stop="logout">Logout</a>
         </li>
 
       </ul>
@@ -30,6 +30,8 @@
 <script>
 import Flash from './helpers/flash'
 import Auth from './store/auth'
+import { post } from './helpers/api'
+import flash from './helpers/flash';
 
 export default {
   created() {
@@ -39,6 +41,26 @@ export default {
     return {
       flash: Flash.state,
       auth: Auth.state
+    }
+  },
+  computed: {
+    check() {
+      if(this.auth.api_token && this.auth.user_id) {
+        return true
+      }
+      return false
+    }
+  },
+  methods: {
+    logout() {
+      post(`/api/logout`)
+        .then((res) => {
+          if(res.data.logged_out) {
+            Auth.remove()
+            flash.setSuccess('Logout success !')
+            this.$router.push('/login')
+          }
+        })
     }
   }
 }
